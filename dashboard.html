@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GabaritoApp — Meus Quizzes</title>
+<style>
+  :root { --azul:#2563eb; --verde:#16a34a; --texto:#1e293b; --borda:#e2e8f0; --cinza:#f1f5f9; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f8fafc; color:var(--texto); }
+  header {
+    background:var(--azul); color:white; padding:14px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    position:sticky; top:0; z-index:100;
+  }
+  header h1 { font-size:1.15rem; }
+  header button { background:rgba(255,255,255,0.15); border:none; color:white;
+    padding:8px 14px; border-radius:10px; cursor:pointer; font-size:0.85rem; }
+  .container { max-width:600px; margin:0 auto; padding:16px; }
+  .saudacao { font-size:0.9rem; color:#64748b; margin-bottom:16px; }
+  .btn-novo {
+    width:100%; padding:16px; border:2px dashed var(--azul); background:#eff6ff;
+    color:var(--azul); border-radius:16px; font-size:1rem; font-weight:700;
+    cursor:pointer; margin-bottom:16px;
+  }
+  .quiz-card {
+    background:white; border-radius:16px; padding:16px; margin-bottom:12px;
+    border:1px solid var(--borda); cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center;
+    transition:all .15s;
+  }
+  .quiz-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .quiz-info h3 { font-size:1rem; margin-bottom:4px; }
+  .quiz-info p { font-size:0.8rem; color:#64748b; }
+  .quiz-badge {
+    font-size:0.75rem; padding:4px 10px; border-radius:20px; font-weight:700;
+  }
+  .badge-ok { background:#dcfce7; color:var(--verde); }
+  .badge-pendente { background:#fef3c7; color:#d97706; }
+  .vazio { text-align:center; color:#94a3b8; padding:40px 20px; font-size:0.9rem; }
+
+  /* modal */
+  .modal-bg {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    z-index:200; align-items:center; justify-content:center; padding:16px;
+  }
+  .modal-bg.aberto { display:flex; }
+  .modal {
+    background:white; border-radius:20px; padding:24px; width:100%; max-width:400px;
+  }
+  .modal h2 { font-size:1.1rem; margin-bottom:16px; }
+  .modal label { font-size:0.85rem; font-weight:600; display:block; margin-bottom:5px; }
+  .modal input {
+    width:100%; padding:12px; border:1.5px solid var(--borda); border-radius:10px;
+    font-size:1rem; margin-bottom:12px;
+  }
+  .modal .acoes { display:flex; gap:10px; margin-top:8px; }
+  .modal button {
+    flex:1; padding:12px; border:none; border-radius:10px; font-weight:700;
+    font-size:0.95rem; cursor:pointer;
+  }
+  .btn-criar { background:var(--azul); color:white; }
+  .btn-cancelar { background:var(--cinza); color:var(--texto); }
+</style>
+</head>
+<body>
+<header>
+  <h1>📋 GabaritoApp</h1>
+  <button onclick="sair()">Sair</button>
+</header>
+
+<div class="container">
+  <p class="saudacao">Olá, <b>{{ user_nome }}</b>! Seus quizzes:</p>
+  <button class="btn-novo" onclick="abrirModal()">+ Criar novo quiz</button>
+  <div id="lista"></div>
+</div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>Novo Quiz</h2>
+    <label>Nome do quiz</label>
+    <input type="text" id="quiz-nome" placeholder="Ex: Prova Física 2º Bimestre — 1ºA">
+    <label>Número de questões</label>
+    <input type="number" id="quiz-n" value="20" min="5" max="100">
+    <div class="acoes">
+      <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-criar" onclick="criarQuiz()">Criar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function carregar() {
+  const res = await fetch('/api/quizzes');
+  const quizzes = await res.json();
+  const lista = document.getElementById('lista');
+  if (!quizzes.length) {
+    lista.innerHTML = '<div class="vazio">Nenhum quiz ainda.<br>Crie o primeiro para começar!</div>';
+    return;
+  }
+  lista.innerHTML = quizzes.map(q => `
+    <div class="quiz-card" onclick="location.href='/quiz/${q.id}'">
+      <div class="quiz-info">
+        <h3>${q.nome}</h3>
+        <p>#${q.id} · ${q.n_questoes} questões · ${q.n_scans} correções</p>
+      </div>
+      <span class="quiz-badge ${q.tem_gabarito ? 'badge-ok' : 'badge-pendente'}">
+        ${q.tem_gabarito ? 'Pronto' : 'Sem gabarito'}
+      </span>
+    </div>`).join('');
+}
+
+function abrirModal() { document.getElementById('modal').classList.add('aberto'); }
+function fecharModal() { document.getElementById('modal').classList.remove('aberto'); }
+
+async function criarQuiz() {
+  const nome = document.getElementById('quiz-nome').value.trim();
+  const n = parseInt(document.getElementById('quiz-n').value);
+  if (!nome) { alert('Dê um nome ao quiz.'); return; }
+  const res = await fetch('/api/quizzes', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nome, n_questoes:n})
+  });
+  const data = await res.json();
+  if (data.erro) { alert(data.erro); return; }
+  location.href = '/quiz/' + data.quiz_id;
+}
+
+async function sair() {
+  await fetch('/api/logout', {method:'POST'});
+  location.href = '/login';
+}
+
+carregar();
+</script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ quiz_nome }} — GabaritoApp</title>
+<style>
+  :root { --azul:#2563eb; --verde:#16a34a; --vermelho:#dc2626; --laranja:#ea580c;
+          --texto:#1e293b; --borda:#e2e8f0; --cinza:#f1f5f9; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f8fafc; color:var(--texto); }
+  header {
+    background:var(--azul); color:white; padding:12px 16px;
+    display:flex; align-items:center; gap:12px;
+    position:sticky; top:0; z-index:100;
+  }
+  header a { color:white; text-decoration:none; font-size:1.3rem; }
+  header h1 { font-size:1rem; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .container { max-width:600px; margin:0 auto; padding:12px; }
+
+  /* abas */
+  .abas { display:flex; background:white; border-radius:14px; padding:4px;
+    margin-bottom:14px; border:1px solid var(--borda); }
+  .aba {
+    flex:1; text-align:center; padding:10px 4px; font-size:0.8rem; font-weight:700;
+    color:#64748b; border-radius:10px; cursor:pointer;
+  }
+  .aba.ativa { background:var(--azul); color:white; }
+
+  .card { background:white; border-radius:16px; padding:16px; margin-bottom:12px;
+    border:1px solid var(--borda); }
+  .card h2 { font-size:0.95rem; margin-bottom:10px; }
+  .btn {
+    display:block; width:100%; padding:14px; border:none; border-radius:12px;
+    font-size:0.98rem; font-weight:700; cursor:pointer; text-align:center;
+  }
+  .btn-azul { background:var(--azul); color:white; }
+  .btn-verde { background:var(--verde); color:white; }
+  .btn-cinza { background:var(--cinza); color:var(--texto); }
+  .btn + .btn { margin-top:8px; }
+
+  /* gabarito grid */
+  .gab-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+  .gab-item { display:flex; align-items:center; gap:6px; background:var(--cinza);
+    border-radius:8px; padding:6px 8px; }
+  .gab-item span { font-weight:700; font-size:0.85rem; min-width:24px; }
+  .gab-item select { flex:1; padding:5px; border-radius:6px; border:1px solid var(--borda); font-size:0.85rem; }
+
+  /* scan */
+  .scan-resultado {
+    background:linear-gradient(135deg,#eff6ff,#dbeafe); border-radius:14px;
+    padding:16px; text-align:center; margin-bottom:10px;
+  }
+  .scan-resultado .nota { font-size:2.6rem; font-weight:800; color:var(--azul); }
+  .scan-badges { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+  .sbadge { font-size:0.75rem; padding:4px 10px; border-radius:20px; font-weight:700; }
+  .sb-verde { background:#dcfce7; color:var(--verde); }
+  .sb-vermelho { background:#fee2e2; color:var(--vermelho); }
+  .sb-cinza { background:#e2e8f0; color:#475569; }
+  .sb-laranja { background:#ffedd5; color:var(--laranja); }
+  .nome-crop { width:100%; border-radius:10px; border:1px solid var(--borda); margin-top:10px; }
+  .debug-img { width:100%; border-radius:12px; margin-top:10px; }
+
+  /* lista de scans */
+  .scan-item {
+    display:flex; align-items:center; gap:10px; background:white;
+    border:1px solid var(--borda); border-radius:12px; padding:10px; margin-bottom:8px;
+    cursor:pointer;
+  }
+  .scan-item img { width:110px; border-radius:8px; border:1px solid var(--borda); }
+  .scan-item .info { flex:1; }
+  .scan-item .nota-mini { font-size:1.3rem; font-weight:800; color:var(--azul); }
+  .scan-item .meta { font-size:0.72rem; color:#94a3b8; }
+  .scan-item .del { background:none; border:none; color:#cbd5e1; font-size:1.1rem; cursor:pointer; }
+
+  /* estatísticas */
+  .stat-resumo { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+  .stat-box { background:var(--cinza); border-radius:12px; padding:10px; text-align:center; }
+  .stat-box .v { font-size:1.2rem; font-weight:800; color:var(--azul); }
+  .stat-box .l { font-size:0.68rem; color:#64748b; margin-top:2px; }
+  .q-stat { margin-bottom:12px; }
+  .q-stat .titulo { font-size:0.85rem; font-weight:700; margin-bottom:4px;
+    display:flex; justify-content:space-between; }
+  .barra { display:flex; height:18px; border-radius:9px; overflow:hidden; background:var(--cinza); }
+  .barra div { height:100%; }
+  .b-certo { background:var(--verde); }
+  .b-errado { background:var(--vermelho); }
+  .b-branco { background:#94a3b8; }
+  .b-multi { background:var(--laranja); }
+  .alts { font-size:0.72rem; color:#64748b; margin-top:3px; }
+
+  .loading { display:none; text-align:center; padding:20px; }
+  .spinner { width:36px; height:36px; border:4px solid var(--borda);
+    border-top-color:var(--azul); border-radius:50%;
+    animation:spin .8s linear infinite; margin:0 auto 8px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .erro-box { background:#fee2e2; color:var(--vermelho); padding:12px;
+    border-radius:10px; font-size:0.88rem; margin-top:8px; display:none; }
+  .msg-ok { background:#dcfce7; color:var(--verde); padding:12px;
+    border-radius:10px; font-size:0.88rem; margin-top:8px; display:none; }
+  .painel { display:none; }
+  .painel.ativo { display:block; }
+  .vazio { text-align:center; color:#94a3b8; padding:30px; font-size:0.88rem; }
+
+  /* modal scan detalhe */
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55);
+    z-index:300; align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto; }
+  .modal-bg.aberto { display:flex; }
+  .modal { background:white; border-radius:18px; padding:18px; width:100%;
+    max-width:500px; margin:20px 0; }
+  .tabela { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:10px; }
+  .tabela th { background:var(--cinza); padding:7px; font-size:0.72rem;
+    text-transform:uppercase; color:#64748b; text-align:left; }
+  .tabela td { padding:7px; border-bottom:1px solid var(--borda); }
+  .tag { padding:2px 8px; border-radius:16px; font-size:0.72rem; font-weight:700; }
+  .t-certo { background:#dcfce7; color:var(--verde); }
+  .t-errado { background:#fee2e2; color:var(--vermelho); }
+  .t-branco { background:#f1f5f9; color:#64748b; }
+  .t-multimarcada { background:#ffedd5; color:var(--laranja); }
+</style>
+</head>
+<body>
+<header>
+  <a href="/dashboard">←</a>
+  <h1>{{ quiz_nome }} <span style="opacity:.7">#{{ quiz_id }}</span></h1>
+</header>
+
+<div class="container">
+  <div class="abas">
+    <div class="aba ativa" onclick="mudarAba('gabarito', this)">✏️ Gabarito</div>
+    <div class="aba" onclick="mudarAba('scan', this)">📸 Escanear</div>
+    <div class="aba" onclick="mudarAba('scans', this)">📚 Correções</div>
+    <div class="aba" onclick="mudarAba('stats', this)">📊 Estatísticas</div>
+  </div>
+
+  <!-- GABARITO -->
+  <div class="painel ativo" id="painel-gabarito">
+    <div class="card">
+      <h2>Folha de respostas</h2>
+      <button class="btn btn-verde" onclick="baixarPDF()">⬇️ Baixar PDF para impressão</button>
+    </div>
+    <div class="card">
+      <h2>Gabarito correto</h2>
+      <div class="gab-grid" id="gab-grid"></div>
+      <button class="btn btn-azul" style="margin-top:12px" onclick="salvarGabarito()">Salvar gabarito</button>
+      <div class="msg-ok" id="gab-ok">✅ Gabarito salvo!</div>
+      <div class="erro-box" id="gab-erro"></div>
+    </div>
+  </div>
+
+  <!-- SCAN -->
+  <div class="painel" id="painel-scan">
+    <div class="card">
+      <h2>Escanear folha de resposta</h2>
+      <p style="font-size:0.82rem;color:#64748b;margin-bottom:10px">
+        Fotografe uma folha por vez. Após cada correção, fotografe a próxima — o resultado fica salvo automaticamente.
+      </p>
+      <button class="btn btn-azul" onclick="document.getElementById('input-foto').click()">
+        📷 Fotografar / escolher foto
+      </button>
+      <input type="file" id="input-foto" accept="image/*" capture="environment"
+             style="display:none" onchange="escanear(this)">
+      <div class="loading" id="scan-loading">
+        <div class="spinner"></div><p style="font-size:0.85rem">Lendo folha...</p>
+      </div>
+      <div class="erro-box" id="scan-erro"></div>
+    </div>
+    <div id="scan-resultado-area"></div>
+  </div>
+
+  <!-- LISTA DE SCANS -->
+  <div class="painel" id="painel-scans">
+    <div id="lista-scans"></div>
+  </div>
+
+  <!-- ESTATÍSTICAS -->
+  <div class="painel" id="painel-stats">
+    <div id="stats-area"></div>
+  </div>
+</div>
+
+<!-- MODAL DETALHE -->
+<div class="modal-bg" id="modal-scan" onclick="if(event.target===this)this.classList.remove('aberto')">
+  <div class="modal" id="modal-scan-conteudo"></div>
+</div>
+
+<script>
+const QUIZ_ID = {{ quiz_id }};
+const N_QUESTOES = {{ n_questoes }};
+
+function mudarAba(nome, el) {
+  document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+  document.querySelectorAll('.painel').forEach(p => p.classList.remove('ativo'));
+  el.classList.add('ativa');
+  document.getElementById('painel-' + nome).classList.add('ativo');
+  if (nome === 'scans') carregarScans();
+  if (nome === 'stats') carregarStats();
+}
+
+// ─── GABARITO ───
+async function carregarGabarito() {
+  const res = await fetch(`/api/quizzes/${QUIZ_ID}`);
+  const quiz = await res.json();
+  const grid = document.getElementById('gab-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= N_QUESTOES; i++) {
+    const atual = quiz.gabarito[String(i)] || '';
+    grid.innerHTML += `
+      <div class="gab-item">
+        <span>${String(i).padStart(2,'0')}</span>
+        <select id="gab-${i}">
+          <option value="">—</option>
+          ${['A','B','C','D','E'].map(a =>
+            `<option value="${a}" ${a===atual?'selected':''}>${a}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+}
+
+async function salvarGabarito() {
+  const gabarito = {};
+  for (let i = 1; i <= N_QUESTOES; i++) {
+    const v = document.getElementById('gab-' + i).value;
+    if (v) gabarito[String(i)] = v;
+  }
+  const res = await fetch(`/api/quizzes/${QUIZ_ID}/gabarito`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({gabarito})
+  });
+  const data = await res.json();
+  const ok = document.getElementById('gab-ok');
+  const erro = document.getElementById('gab-erro');
+  if (data.erro) { erro.textContent = data.erro; erro.style.display='block'; ok.style.display='none'; }
+  else { ok.style.display='block'; erro.style.display='none';
+    setTimeout(()=> ok.style.display='none', 2500); }
+}
+
+async function baixarPDF() {
+  const res = await fetch(`/api/quizzes/${QUIZ_ID}/pdf`);
+  const data = await res.json();
+  const bytes = atob(data.pdf);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  const blob = new Blob([arr], {type:'application/pdf'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `quiz_${QUIZ_ID}_folha.pdf`;
+  a.click();
+}
+
+// ─── SCAN ───
+async function escanear(input) {
+  const foto = input.files[0];
+  if (!foto) return;
+  input.value = '';
+  document.getElementById('scan-loading').style.display = 'block';
+  document.getElementById('scan-erro').style.display = 'none';
+
+  const form = new FormData();
+  form.append('foto', foto);
+  try {
+    const res = await fetch(`/api/quizzes/${QUIZ_ID}/scan`, {method:'POST', body:form});
+    const data = await res.json();
+    if (data.erro) throw new Error(data.erro);
+    mostrarScanResultado(data);
+  } catch(e) {
+    const el = document.getElementById('scan-erro');
+    el.textContent = '❌ ' + e.message;
+    el.style.display = 'block';
+  } finally {
+    document.getElementById('scan-loading').style.display = 'none';
+  }
+}
+
+function mostrarScanResultado(d) {
+  const area = document.getElementById('scan-resultado-area');
+  area.innerHTML = `
+    <div class="card">
+      <div class="scan-resultado">
+        <div class="nota">${d.nota.toFixed(1)}</div>
+        <div class="scan-badges">
+          <span class="sbadge sb-verde">✔ ${d.acertos} acertos</span>
+          <span class="sbadge sb-vermelho">✘ ${d.erros} erros</span>
+          ${d.brancos ? `<span class="sbadge sb-cinza">⬜ ${d.brancos} em branco</span>` : ''}
+          ${d.multimarcadas ? `<span class="sbadge sb-laranja">⚠ ${d.multimarcadas} multimarcadas</span>` : ''}
+        </div>
+      </div>
+      ${d.nome_img ? `<p style="font-size:0.78rem;color:#64748b">Aluno:</p>
+        <img class="nome-crop" src="data:image/jpeg;base64,${d.nome_img}">` : ''}
+      <img class="debug-img" src="data:image/jpeg;base64,${d.debug_img}">
+      <button class="btn btn-azul" style="margin-top:12px"
+        onclick="document.getElementById('input-foto').click()">
+        📷 Escanear próxima folha
+      </button>
+    </div>`;
+  area.scrollIntoView({behavior:'smooth'});
+}
+
+// ─── LISTA DE SCANS ───
+async function carregarScans() {
+  const res = await fetch(`/api/quizzes/${QUIZ_ID}/scans`);
+  const scans = await res.json();
+  const el = document.getElementById('lista-scans');
+  if (!scans.length) {
+    el.innerHTML = '<div class="vazio">Nenhuma correção ainda.<br>Use a aba Escanear.</div>';
+    return;
+  }
+  el.innerHTML = scans.map(s => `
+    <div class="scan-item" onclick="abrirScan(${s.id})">
+      ${s.nome_img ? `<img src="data:image/jpeg;base64,${s.nome_img}">` : ''}
+      <div class="info">
+        <div class="nota-mini">${s.nota.toFixed(1)}</div>
+        <div class="meta">✔${s.acertos} ✘${s.erros}${s.brancos?` ⬜${s.brancos}`:''}${s.multimarcadas?` ⚠${s.multimarcadas}`:''}</div>
+        <div class="meta">${new Date(s.criado_em + 'Z').toLocaleString('pt-BR')}</div>
+      </div>
+      <button class="del" onclick="event.stopPropagation(); deletarScan(${s.id})">🗑</button>
+    </div>`).join('');
+}
+
+async function deletarScan(id) {
+  if (!confirm('Apagar esta correção?')) return;
+  await fetch(`/api/scans/${id}`, {method:'DELETE'});
+  carregarScans();
+}
+
+async function abrirScan(id) {
+  const res = await fetch(`/api/scans/${id}`);
+  const d = await res.json();
+  document.getElementById('modal-scan-conteudo').innerHTML = `
+    <div class="scan-resultado">
+      <div class="nota">${d.nota.toFixed(1)}</div>
+      <div class="scan-badges">
+        <span class="sbadge sb-verde">✔ ${d.acertos}</span>
+        <span class="sbadge sb-vermelho">✘ ${d.erros}</span>
+        ${d.brancos ? `<span class="sbadge sb-cinza">⬜ ${d.brancos}</span>` : ''}
+        ${d.multimarcadas ? `<span class="sbadge sb-laranja">⚠ ${d.multimarcadas}</span>` : ''}
+      </div>
+    </div>
+    ${d.nome_img ? `<img class="nome-crop" src="data:image/jpeg;base64,${d.nome_img}">` : ''}
+    <table class="tabela">
+      <thead><tr><th>Q</th><th>Marcou</th><th>Correta</th><th>Status</th></tr></thead>
+      <tbody>
+        ${d.detalhe.map(x => `
+          <tr>
+            <td><b>${x.questao}</b></td>
+            <td>${x.marcadas.length ? x.marcadas.join(',') : '—'}</td>
+            <td>${x.correta || '—'}</td>
+            <td><span class="tag t-${x.status}">${x.status}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <img class="debug-img" src="data:image/jpeg;base64,${d.debug_img}">`;
+  document.getElementById('modal-scan').classList.add('aberto');
+}
+
+// ─── ESTATÍSTICAS ───
+async function carregarStats() {
+  const res = await fetch(`/api/quizzes/${QUIZ_ID}/estatisticas`);
+  const d = await res.json();
+  const el = document.getElementById('stats-area');
+  if (!d.n_scans) {
+    el.innerHTML = '<div class="vazio">Sem correções ainda para gerar estatísticas.</div>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="card">
+      <div class="stat-resumo">
+        <div class="stat-box"><div class="v">${d.n_scans}</div><div class="l">Provas</div></div>
+        <div class="stat-box"><div class="v">${d.media.toFixed(1)}</div><div class="l">Média</div></div>
+        <div class="stat-box"><div class="v">${d.maior.toFixed(1)}</div><div class="l">Maior</div></div>
+        <div class="stat-box"><div class="v">${d.menor.toFixed(1)}</div><div class="l">Menor</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Desempenho por questão</h2>
+      ${d.questoes.map(q => `
+        <div class="q-stat">
+          <div class="titulo">
+            <span>Q${q.questao} ${q.correta ? `(correta: ${q.correta})` : ''}</span>
+            <span style="color:var(--verde)">${q.pct_acerto}% acerto</span>
+          </div>
+          <div class="barra">
+            <div class="b-certo" style="width:${q.pct_acerto}%"></div>
+            <div class="b-errado" style="width:${q.pct_erro}%"></div>
+            <div class="b-branco" style="width:${q.pct_branco}%"></div>
+            <div class="b-multi" style="width:${q.pct_multi}%"></div>
+          </div>
+          <div class="alts">
+            Marcações: ${Object.entries(q.alternativas).map(([a,n]) => `${a}:${n}`).join(' · ')}
+          </div>
+        </div>`).join('')}
+      <p style="font-size:0.72rem;color:#94a3b8;margin-top:8px">
+        🟩 acerto · 🟥 erro · ⬜ branco · 🟧 multimarcada
+      </p>
+    </div>`;
+}
+
+carregarGabarito();
+</script>
+</body>
+</html>
