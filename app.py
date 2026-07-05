@@ -537,14 +537,38 @@ def intensidade_circulo(img, cx, cy, raio):
 
 
 def ler_questoes(corrigida, layout, W, H):
-    raio = int(layout["bubble_radius_pt"] / layout["page_width_pt"] * W * 1.25)
+    # Reduzi o multiplicador de 1.25 para 1.05 para não ler fora da bolinha
+    raio = int(layout["bubble_radius_pt"] / layout["page_width_pt"] * W * 1.05)
     resultados = {}
     for q_num, alts in layout["questoes"].items():
         intensidades = {}
         for alt, pos in alts.items():
             cx, cy = int(pos["x"] * W), int((1 - pos["y"]) * H)
             intensidades[alt] = intensidade_circulo(corrigida, cx, cy, raio)
-        marcadas = [a for a, v in intensidades.items() if v >= LIMIAR_MARCACAO]
+        
+        # --- NOVA LÓGICA INTELIGENTE ---
+        # Primeiro, pega todas que passaram do limite mínimo (0.45)
+        candidatas = {a: v for a, v in intensidades.items() if v >= LIMIAR_MARCACAO}
+        
+        if not candidatas:
+            # Nenhuma passou do limite, questão está em branco
+            marcadas = []
+        else:
+            # Pega a intensidade da bolinha mais escura (a que o aluno preencheu de verdade)
+            max_intensidade = max(candidatas.values())
+            
+            # Se a mais escura for bem forte, as mais claras são só "borrão/borda"
+            # Vamos ignorar qualquer uma que seja menor que 45% do valor da mais escura
+            marcadas = []
+            if max_intensidade > 0.6: # Aluno definitivamente marcou algo forte
+                for a, v in candidatas.items():
+                    if v >= (max_intensidade * 0.45): # É proporcional à marca forte?
+                        marcadas.append(a)
+            else:
+                # As marcas são fracas (borrão leve), considera todas que passaram do limite
+                marcadas = list(candidatas.keys())
+        # --- FIM DA LÓGICA INTELIGENTE ---
+
         resultados[q_num] = {
             "marcadas": marcadas,
             "resposta": marcadas[0] if len(marcadas) == 1 else None,
