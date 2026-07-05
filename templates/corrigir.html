@@ -305,7 +305,7 @@
 <script src="https://docs.opencv.org/4.9.0/opencv.js" onload="onCvReady()"></script>
 <script>
 const DB_NAME = "gabaritoapp_local";
-const LIMIAR = 0.35;
+const LIMIAR = 0.45;
 let db = null, cvPronto = false;
 let quizAtivo = null;      // {quiz_id, quiz_nome, layout, gabarito, ...}
 let stream = null;
@@ -922,15 +922,40 @@ function intens(mat, cx, cy, raio) {
 }
 
 function lerQuestoes(corr, layout, W, H) {
-  const raio = Math.round(layout.bubble_radius_pt/layout.page_width_pt*W*1.25);
+  // Raio reduzido de 1.25 para 1.05 para não ler fora da bolinha
+  const raio = Math.round(layout.bubble_radius_pt/layout.page_width_pt*W*1.05);
   const res = {};
   for (const q in layout.questoes) {
-    const alts = layout.questoes[q]; const iv = {};
-    for (const a in alts){const p=alts[a];iv[a]=intens(corr,Math.round(p.x*W),Math.round((1-p.y)*H),raio);}
-    const marc = Object.keys(iv).filter(a=>iv[a]>=LIMIAR);
+    const alts = layout.questoes[q]; 
+    const iv = {};
+    for (const a in alts){
+      const p=alts[a];
+      iv[a]=intens(corr,Math.round(p.x*W),Math.round((1-p.y)*H),raio);
+    }
+    
+    // --- NOVA LÓGICA INTELIGENTE ---
+    const valores = Object.values(iv);
+    const maxIntensidade = Math.max(...valores);
+    let marc = [];
+    
+    // Se a bolinha mais forte da questão não for clara o bastante, tá tudo em branco
+    if (maxIntensidade >= LIMIAR) {
+      for (const a in iv) {
+        const v = iv[a];
+        // Regra 1: Tem que ser escura (maior que LIMIAR)
+        // Regra 2: Tem que ter PELO MENOS 55% da escuridão da bolinha mais forte
+        // Regra 3: A diferença pra mais forte não pode ser maior que 0.30
+        if (v >= LIMIAR && v >= (maxIntensidade * 0.55) && (maxIntensidade - v) <= 0.30) {
+          marc.push(a);
+        }
+      }
+    }
+    // --- FIM DA LÓGICA ---
+
     res[q] = {marcadas:marc, resposta:marc.length===1?marc[0]:null, multi:marc.length>1};
   }
   return res;
+}
 }
 function lerMatricula(corr, layout, W, H) {
   if (!layout.id_digitos) return null;
