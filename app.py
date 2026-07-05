@@ -494,7 +494,7 @@ def gerar_pdf_folha(config, layout, folha_id, copias=1, escuro=0):
 # ALGORITMO OMR
 # ══════════════════════════════════════════════
 
-LIMIAR_MARCACAO = 0.35
+LIMIAR_MARCACAO = 0.5
 
 
 def encontrar_marcadores(cinza):
@@ -537,7 +537,7 @@ def intensidade_circulo(img, cx, cy, raio):
 
 
 def ler_questoes(corrigida, layout, W, H):
-    # Reduzi o multiplicador de 1.25 para 1.05 para não ler fora da bolinha
+    # Raio ligeiramente menor para não pegar "sujeira" fora da bolinha
     raio = int(layout["bubble_radius_pt"] / layout["page_width_pt"] * W * 1.05)
     resultados = {}
     for q_num, alts in layout["questoes"].items():
@@ -546,28 +546,21 @@ def ler_questoes(corrigida, layout, W, H):
             cx, cy = int(pos["x"] * W), int((1 - pos["y"]) * H)
             intensidades[alt] = intensidade_circulo(corrigida, cx, cy, raio)
         
-        # --- NOVA LÓGICA INTELIGENTE ---
-        # Primeiro, pega todas que passaram do limite mínimo (0.45)
-        candidatas = {a: v for a, v in intensidades.items() if v >= LIMIAR_MARCACAO}
+        # --- LÓGICA ULTRA RIGOROSA CONTRA BORDAS ---
+        max_intensidade = max(intensidades.values()) if intensidades else 0
+        marcadas = []
         
-        if not candidatas:
-            # Nenhuma passou do limite, questão está em branco
+        # Se a bolinha mais escura da questão não for forte o suficiente, a questão tá em branco
+        if max_intensidade < LIMIAR_MARCACAO:
             marcadas = []
         else:
-            # Pega a intensidade da bolinha mais escura (a que o aluno preencheu de verdade)
-            max_intensidade = max(candidatas.values())
-            
-            # Se a mais escura for bem forte, as mais claras são só "borrão/borda"
-            # Vamos ignorar qualquer uma que seja menor que 45% do valor da mais escura
-            marcadas = []
-            if max_intensidade > 0.6: # Aluno definitivamente marcou algo forte
-                for a, v in candidatas.items():
-                    if v >= (max_intensidade * 0.45): # É proporcional à marca forte?
-                        marcadas.append(a)
-            else:
-                # As marcas são fracas (borrão leve), considera todas que passaram do limite
-                marcadas = list(candidatas.keys())
-        # --- FIM DA LÓGICA INTELIGENTE ---
+            for a, v in intensidades.items():
+                # Regra 1: Tem que ser escuro o suficiente (maior que 0.50)
+                # Regra 2: Tem que ter PELO MENOS 55% da escuridão da bolinha mais forte (mata as bordas)
+                # Regra 3: A diferença entre ela e a mais forte não pode ser maior que 0.25
+                if v >= LIMIAR_MARCACAO and v >= (max_intensidade * 0.55) and (max_intensidade - v) <= 0.25:
+                    marcadas.append(a)
+        # --- FIM DA LÓGICA ---
 
         resultados[q_num] = {
             "marcadas": marcadas,
