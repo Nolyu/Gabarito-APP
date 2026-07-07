@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Novo Gabarito — GabaritoApp</title>
+<style>
+  :root { --azul:#2563eb; --verde:#16a34a; --texto:#1e293b; --borda:#e2e8f0; --cinza:#f1f5f9; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f8fafc; color:var(--texto); }
+  header {
+    background:var(--azul); color:white; padding:12px 16px;
+    display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100;
+  }
+  header a { color:white; text-decoration:none; font-size:1.3rem; }
+  header h1 { font-size:1rem; }
+  .container { max-width:600px; margin:0 auto; padding:14px; }
+  .progresso { font-size:0.8rem; color:#64748b; margin-bottom:12px; font-weight:600; }
+  .card { background:white; border-radius:16px; padding:18px; margin-bottom:12px;
+    border:1px solid var(--borda); }
+  .card h2 { font-size:1rem; margin-bottom:12px; }
+  label { font-size:0.85rem; font-weight:600; display:block; margin-bottom:5px; }
+  input[type=text], input[type=number], select {
+    width:100%; padding:12px; border:1.5px solid var(--borda); border-radius:10px;
+    font-size:0.95rem; margin-bottom:12px; background:white;
+  }
+  .btn { display:block; width:100%; padding:14px; border:none; border-radius:12px;
+    font-size:0.98rem; font-weight:700; cursor:pointer; text-align:center; }
+  .btn-azul { background:var(--azul); color:white; }
+  .btn-verde { background:var(--verde); color:white; }
+  .btn-cinza { background:var(--cinza); color:var(--texto); margin-top:8px; }
+  .passo { display:none; }
+  .passo.ativo { display:block; }
+
+  table.cfg { width:100%; border-collapse:collapse; font-size:0.85rem; }
+  table.cfg th { text-align:left; padding:7px 5px; font-size:0.72rem;
+    text-transform:uppercase; color:#64748b; background:var(--cinza); }
+  table.cfg td { padding:7px 5px; border-bottom:1px solid var(--borda); }
+  table.cfg input[type=text] { margin:0; padding:8px; font-size:0.85rem; }
+  table.cfg select { margin:0; padding:8px; font-size:0.85rem; }
+  input[type=checkbox] { width:19px; height:19px; }
+
+  .bloco-item {
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--cinza); border-radius:10px; padding:10px 12px; margin-bottom:8px;
+    font-size:0.85rem;
+  }
+  .bloco-item button { background:none; border:none; color:#dc2626;
+    font-size:1rem; cursor:pointer; }
+  .add-bloco { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; }
+  .add-bloco > div { flex:1; min-width:100px; }
+  .add-bloco button {
+    padding:11px 14px; background:var(--azul); color:white; border:none;
+    border-radius:10px; font-weight:700; cursor:pointer; margin-bottom:12px;
+  }
+  .erro-box { background:#fee2e2; color:#dc2626; padding:12px; border-radius:10px;
+    font-size:0.88rem; margin-top:8px; display:none; }
+  .resumo-linha { display:flex; justify-content:space-between; font-size:0.88rem;
+    padding:7px 0; border-bottom:1px solid var(--borda); }
+  .toggle-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .toggle-row label { margin:0; flex:1; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/dashboard">←</a>
+  <h1>Novo Gabarito</h1>
+</header>
+
+<div class="container">
+  <div class="progresso" id="progresso">Passo 1 de 4</div>
+
+  <!-- PASSO 1: nome -->
+  <div class="passo ativo" id="passo-1">
+    <div class="card">
+      <h2>1️⃣ Nome do gabarito</h2>
+      <label>Dê um nome para identificar este gabarito</label>
+      <input type="text" id="f-nome" placeholder="Ex: Padrão 20 questões — Física">
+      <button class="btn btn-azul" onclick="irPasso(2)">Avançar →</button>
+    </div>
+  </div>
+
+  <!-- PASSO 2: cabeçalho -->
+  <div class="passo" id="passo-2">
+    <div class="card">
+      <h2>2️⃣ Caixas de cabeçalho</h2>
+      <p style="font-size:0.82rem;color:#64748b;margin-bottom:10px">
+        Campos que o aluno preenche à mão no topo da folha.
+      </p>
+      <table class="cfg">
+        <thead><tr><th>Ativo</th><th>Rótulo na folha</th><th>Largura</th></tr></thead>
+        <tbody id="tabela-cabecalho"></tbody>
+      </table>
+      <button class="btn btn-azul" style="margin-top:14px" onclick="irPasso(3)">Avançar →</button>
+      <button class="btn btn-cinza" onclick="irPasso(1)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- PASSO 3: matrícula e versão -->
+  <div class="passo" id="passo-3">
+    <div class="card">
+      <h2>3️⃣ Matrícula e versão de prova</h2>
+
+      <div class="toggle-row">
+        <input type="checkbox" id="id-ativo" checked>
+        <label for="id-ativo"><b>Incluir seção de matrícula</b> (bolinhas de 0 a 9 — identifica o aluno automaticamente)</label>
+      </div>
+      <div id="id-config">
+        <label>Número de dígitos</label>
+        <select id="id-digitos">
+          <option>3</option><option selected>4</option><option>5</option>
+          <option>6</option><option>7</option><option>8</option>
+        </select>
+        <label>Rótulo da seção</label>
+        <input type="text" id="id-rotulo" value="Matrícula">
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--borda);margin:14px 0">
+
+      <div class="toggle-row">
+        <input type="checkbox" id="ver-ativo">
+        <label for="ver-ativo"><b>Incluir versão de prova</b> (para provas embaralhadas: A, B, C...)</label>
+      </div>
+      <div id="ver-config" style="display:none">
+        <label>Letras das versões (sem espaço)</label>
+        <input type="text" id="ver-letras" value="AB" maxlength="6" style="text-transform:uppercase">
+        <label>Rótulo da seção</label>
+        <input type="text" id="ver-rotulo" value="Versão">
+      </div>
+
+      <button class="btn btn-azul" style="margin-top:8px" onclick="irPasso(4)">Avançar →</button>
+      <button class="btn btn-cinza" onclick="irPasso(2)">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- PASSO 4: questões -->
+  <div class="passo" id="passo-4">
+    <div class="card">
+      <h2>4️⃣ Questões</h2>
+      <p style="font-size:0.82rem;color:#64748b;margin-bottom:10px">
+        Adicione blocos de questões. Cada bloco pode ter alternativas diferentes
+        (ex: ABCDE para múltipla escolha, VF para verdadeiro/falso).
+      </p>
+      <div id="lista-blocos"></div>
+      <div class="add-bloco">
+        <div>
+          <label>Quantidade</label>
+          <input type="number" id="b-qtd" value="10" min="1" max="150">
+        </div>
+        <div>
+          <label>Alternativas</label>
+          <input type="text" id="b-labels" value="ABCDE" maxlength="10" style="text-transform:uppercase">
+        </div>
+        <button onclick="addBloco()">+ Adicionar</button>
+      </div>
+      <div class="resumo-linha"><span>Total de questões</span><b id="total-q">0</b></div>
+      <div class="erro-box" id="erro-final"></div>
+      <button class="btn btn-verde" style="margin-top:14px" onclick="publicar()">✅ Publicar gabarito</button>
+      <button class="btn btn-cinza" onclick="irPasso(3)">← Voltar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CABECALHO_PADRAO = [
+  {rotulo: 'Nome', largura: 'grande', ativo: true},
+  {rotulo: 'Turma', largura: 'media', ativo: true},
+  {rotulo: 'Nº', largura: 'pequena', ativo: true},
+  {rotulo: 'Data', largura: 'media', ativo: false},
+  {rotulo: '', largura: 'media', ativo: false},
+  {rotulo: '', largura: 'media', ativo: false},
+];
+let blocos = [];
+
+function montarCabecalho() {
+  const tb = document.getElementById('tabela-cabecalho');
+  tb.innerHTML = CABECALHO_PADRAO.map((c, i) => `
+    <tr>
+      <td><input type="checkbox" id="cb-ativo-${i}" ${c.ativo ? 'checked' : ''}></td>
+      <td><input type="text" id="cb-rotulo-${i}" value="${c.rotulo}"
+           placeholder="${i >= 3 ? 'Personalizado' : ''}"></td>
+      <td>
+        <select id="cb-larg-${i}">
+          <option value="pequena" ${c.largura==='pequena'?'selected':''}>Pequena</option>
+          <option value="media" ${c.largura==='media'?'selected':''}>Média</option>
+          <option value="grande" ${c.largura==='grande'?'selected':''}>Grande</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+document.getElementById('id-ativo').addEventListener('change', e =>
+  document.getElementById('id-config').style.display = e.target.checked ? 'block' : 'none');
+document.getElementById('ver-ativo').addEventListener('change', e =>
+  document.getElementById('ver-config').style.display = e.target.checked ? 'block' : 'none');
+
+function irPasso(n) {
+  if (n === 2 && !document.getElementById('f-nome').value.trim()) {
+    alert('Dê um nome ao gabarito primeiro.');
+    return;
+  }
+  document.querySelectorAll('.passo').forEach(p => p.classList.remove('ativo'));
+  document.getElementById('passo-' + n).classList.add('ativo');
+  document.getElementById('progresso').textContent = `Passo ${n} de 4`;
+  window.scrollTo(0, 0);
+}
+
+function addBloco() {
+  const qtd = parseInt(document.getElementById('b-qtd').value);
+  const labels = document.getElementById('b-labels').value.trim().toUpperCase();
+  if (!qtd || qtd < 1) { alert('Quantidade inválida.'); return; }
+  if (!labels || labels.length < 2 || new Set(labels).size !== labels.length) {
+    alert('As alternativas precisam de pelo menos 2 letras, sem repetição.');
+    return;
+  }
+  blocos.push({qtd, labels});
+  renderBlocos();
+}
+
+function removerBloco(i) {
+  blocos.splice(i, 1);
+  renderBlocos();
+}
+
+function renderBlocos() {
+  const el = document.getElementById('lista-blocos');
+  el.innerHTML = blocos.map((b, i) => `
+    <div class="bloco-item">
+      <span><b>${b.qtd}</b> questões · alternativas <b>${b.labels}</b></span>
+      <button onclick="removerBloco(${i})">✕</button>
+    </div>`).join('');
+  const total = blocos.reduce((s, b) => s + b.qtd, 0);
+  document.getElementById('total-q').textContent = total;
+}
+
+async function publicar() {
+  const erroEl = document.getElementById('erro-final');
+  erroEl.style.display = 'none';
+  if (!blocos.length) {
+    erroEl.textContent = 'Adicione pelo menos um bloco de questões.';
+    erroEl.style.display = 'block';
+    return;
+  }
+
+  const cabecalho = CABECALHO_PADRAO.map((_, i) => ({
+    rotulo: document.getElementById('cb-rotulo-' + i).value.trim(),
+    largura: document.getElementById('cb-larg-' + i).value,
+    ativo: document.getElementById('cb-ativo-' + i).checked &&
+           !!document.getElementById('cb-rotulo-' + i).value.trim(),
+  })).filter(c => c.ativo);
+
+  const questoes = [];
+  let num = 1;
+  for (const b of blocos) {
+    for (let i = 0; i < b.qtd; i++) {
+      questoes.push({numero: num++, labels: b.labels});
+    }
+  }
+
+  const config = {
+    nome: document.getElementById('f-nome').value.trim(),
+    cabecalho,
+    id_aluno: {
+      ativo: document.getElementById('id-ativo').checked,
+      digitos: parseInt(document.getElementById('id-digitos').value),
+      rotulo: document.getElementById('id-rotulo').value.trim() || 'Matrícula',
+    },
+    versao: {
+      ativo: document.getElementById('ver-ativo').checked,
+      letras: document.getElementById('ver-letras').value.trim().toUpperCase() || 'AB',
+      rotulo: document.getElementById('ver-rotulo').value.trim() || 'Versão',
+    },
+    questoes,
+  };
+
+  try {
+    const res = await fetch('/api/folhas', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(config)
+    });
+    const data = await res.json();
+    if (data.erro) throw new Error(data.erro);
+    alert(`✅ Gabarito publicado!\n\nLocalizador: ${data.localizador}\n\nAgora você pode baixar o PDF no painel e fazer uma correção usando este gabarito.`);
+    location.href = '/dashboard';
+  } catch(e) {
+    erroEl.textContent = e.message;
+    erroEl.style.display = 'block';
+  }
+}
+
+montarCabecalho();
+</script>
+</body>
+</html>
