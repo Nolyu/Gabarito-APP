@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<title>GabaritoApp — Corrija provas em segundos, mesmo sem internet</title>
+<meta name="description" content="Corrija provas de múltipla escolha com a câmera do celular. Funciona offline, feito para a realidade da escola brasileira.">
+<link rel="icon" href="/static/icon-192.png">
+<style>
+  :root { --azul:#2563eb; --azul-esc:#1d4ed8; --verde:#16a34a; --texto:#0f172a;
+          --cinza-txt:#64748b; --borda:#e2e8f0; --fundo:#f8fafc; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    color:var(--texto); line-height:1.55; }
+
+  /* NAV */
+  nav { position:sticky; top:0; background:rgba(255,255,255,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--borda); z-index:50; }
+  .nav-in { max-width:1000px; margin:0 auto; padding:12px 20px;
+    display:flex; align-items:center; justify-content:space-between; }
+  .logo { font-weight:800; font-size:1.1rem; color:var(--azul); }
+  .nav-btns { display:flex; gap:8px; }
+  .btn { display:inline-block; padding:10px 18px; border-radius:10px; font-weight:700;
+    font-size:0.9rem; text-decoration:none; cursor:pointer; border:none; }
+  .btn-primario { background:var(--azul); color:white; }
+  .btn-primario:hover { background:var(--azul-esc); }
+  .btn-fantasma { color:var(--texto); border:1.5px solid var(--borda); background:white; }
+
+  /* HERO */
+  .hero { background:linear-gradient(165deg,#eff6ff 0%,#ffffff 60%); padding:64px 20px 56px; }
+  .hero-in { max-width:1000px; margin:0 auto; display:grid;
+    grid-template-columns:1.05fr 0.95fr; gap:48px; align-items:center; }
+  .selo { display:inline-block; background:#dcfce7; color:var(--verde); font-size:0.76rem;
+    font-weight:800; padding:6px 12px; border-radius:20px; margin-bottom:16px; }
+  h1 { font-size:2.6rem; line-height:1.15; letter-spacing:-0.02em; margin-bottom:16px; }
+  h1 span { color:var(--azul); }
+  .sub { font-size:1.08rem; color:var(--cinza-txt); margin-bottom:28px; }
+  .hero-btns { display:flex; gap:12px; flex-wrap:wrap; }
+  .hero-nota { font-size:0.8rem; color:#94a3b8; margin-top:14px; }
+
+  /* MOCK do celular */
+  .mock { background:#1e293b; border-radius:28px; padding:10px; box-shadow:0 20px 50px rgba(15,23,42,0.22);
+    max-width:270px; margin:0 auto; }
+  .mock-tela { background:var(--fundo); border-radius:20px; overflow:hidden; }
+  .mock-top { background:var(--azul); color:white; padding:12px 14px; font-size:0.78rem; font-weight:700; }
+  .mock-corpo { padding:12px; }
+  .mock-nota { background:linear-gradient(135deg,#eff6ff,#dbeafe); border-radius:12px;
+    padding:14px; text-align:center; margin-bottom:10px; }
+  .mock-nota .n { font-size:2.2rem; font-weight:800; color:var(--azul); line-height:1; }
+  .mock-nota .s { font-size:0.68rem; color:var(--cinza-txt); }
+  .mock-badges { display:flex; gap:5px; justify-content:center; margin-top:8px; flex-wrap:wrap; }
+  .mb { font-size:0.62rem; font-weight:700; padding:3px 8px; border-radius:12px; }
+  .mb-v { background:#dcfce7; color:var(--verde); }
+  .mb-r { background:#fee2e2; color:#dc2626; }
+  .mock-linha { display:flex; align-items:center; gap:8px; background:white;
+    border:1px solid var(--borda); border-radius:9px; padding:7px; margin-bottom:6px; }
+  .mock-linha .nome { flex:1; height:9px; background:#e2e8f0; border-radius:4px; }
+  .mock-linha .nt { font-size:0.9rem; font-weight:800; color:var(--azul); }
+
+  /* SEÇÕES */
+  section { padding:64px 20px; }
+  .in { max-width:1000px; margin:0 auto; }
+  h2 { font-size:1.9rem; letter-spacing:-0.01em; text-align:center; margin-bottom:10px; }
+  .sec-sub { text-align:center; color:var(--cinza-txt); margin-bottom:44px; font-size:1rem; }
+
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .card { background:white; border:1px solid var(--borda); border-radius:16px; padding:24px; }
+  .card .ic { font-size:1.7rem; margin-bottom:10px; display:block; }
+  .card h3 { font-size:1.02rem; margin-bottom:6px; }
+  .card p { font-size:0.9rem; color:var(--cinza-txt); }
+
+  .destaque { background:var(--fundo); }
+
+  /* PASSOS */
+  .passos { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  .passo { text-align:center; }
+  .passo .num { width:38px; height:38px; border-radius:50%; background:var(--azul); color:white;
+    font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
+  .passo h3 { font-size:0.95rem; margin-bottom:4px; }
+  .passo p { font-size:0.84rem; color:var(--cinza-txt); }
+
+  /* COMPARATIVO */
+  table.comp { width:100%; border-collapse:collapse; background:white;
+    border:1px solid var(--borda); border-radius:14px; overflow:hidden; }
+  table.comp th, table.comp td { padding:14px 16px; text-align:left; font-size:0.9rem;
+    border-bottom:1px solid var(--borda); }
+  table.comp th { background:var(--fundo); font-size:0.76rem; text-transform:uppercase;
+    letter-spacing:0.03em; color:var(--cinza-txt); }
+  table.comp td.sim { color:var(--verde); font-weight:700; }
+  table.comp td.nao { color:#94a3b8; }
+  table.comp tr:last-child td { border-bottom:none; }
+
+  /* CTA FINAL */
+  .cta { background:linear-gradient(135deg,var(--azul),#1e40af); color:white; text-align:center; }
+  .cta h2 { color:white; }
+  .cta p { color:#bfdbfe; margin-bottom:26px; }
+  .cta .btn-primario { background:white; color:var(--azul); }
+  .cta .btn-primario:hover { background:#eff6ff; }
+
+  footer { background:#0f172a; color:#94a3b8; padding:30px 20px; text-align:center; font-size:0.84rem; }
+  footer a { color:#cbd5e1; text-decoration:none; }
+
+  @media (max-width:820px) {
+    .hero-in { grid-template-columns:1fr; gap:36px; }
+    h1 { font-size:2rem; }
+    .grid { grid-template-columns:1fr; }
+    .passos { grid-template-columns:repeat(2,1fr); gap:26px; }
+    section { padding:48px 20px; }
+    .mock { max-width:230px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <span class="logo">📋 GabaritoApp</span>
+    <div class="nav-btns">
+      <a href="/login" class="btn btn-fantasma">Entrar</a>
+      <a href="/login" class="btn btn-primario">Criar conta grátis</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-in">
+    <div>
+      <span class="selo">📴 FUNCIONA SEM INTERNET</span>
+      <h1>Corrija uma prova em <span>2 segundos</span>, direto do celular</h1>
+      <p class="sub">
+        Aponte a câmera para a folha de respostas e pronto: nota calculada, erros marcados,
+        tudo salvo. Feito para a realidade da escola brasileira — onde a internet nem sempre chega.
+      </p>
+      <div class="hero-btns">
+        <a href="/login" class="btn btn-primario">Começar de graça</a>
+        <a href="#como-funciona" class="btn btn-fantasma">Ver como funciona</a>
+      </div>
+      <p class="hero-nota">Sem cartão de crédito. Crie sua conta e corrija hoje mesmo.</p>
+    </div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="mock-tela">
+        <div class="mock-top">📷 Escanear — Física 3º ano</div>
+        <div class="mock-corpo">
+          <div class="mock-nota">
+            <div class="n">8,5</div>
+            <div class="s">de 10,0 pontos</div>
+            <div class="mock-badges">
+              <span class="mb mb-v">✔ 17 acertos</span>
+              <span class="mb mb-r">✘ 3 erros</span>
+            </div>
+          </div>
+          <div class="mock-linha"><div class="nome"></div><span class="nt">8,5</span></div>
+          <div class="mock-linha"><div class="nome"></div><span class="nt">7,0</span></div>
+          <div class="mock-linha"><div class="nome"></div><span class="nt">9,5</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BENEFÍCIOS -->
+<section>
+  <div class="in">
+    <h2>Por que os professores usam</h2>
+    <p class="sec-sub">Menos tempo corrigindo. Mais tempo ensinando.</p>
+    <div class="grid">
+      <div class="card">
+        <span class="ic">📴</span>
+        <h3>Funciona offline de verdade</h3>
+        <p>A correção acontece dentro do celular. Sem sinal na sala? Sem problema.
+        Os resultados sobem sozinhos quando você pegar Wi-Fi.</p>
+      </div>
+      <div class="card">
+        <span class="ic">⚡</span>
+        <h3>Captura automática</h3>
+        <p>Alinhe a folha na moldura e o app captura sozinho. Você só vira a página
+        e segue para a próxima prova.</p>
+      </div>
+      <div class="card">
+        <span class="ic">🇧🇷</span>
+        <h3>Feito no Brasil, em português</h3>
+        <p>Sem cartão internacional, sem menus em inglês. Suporte de quem também
+        dá aula em escola pública.</p>
+      </div>
+      <div class="card">
+        <span class="ic">🖨️</span>
+        <h3>Folha comum, xerocada</h3>
+        <p>Baixe o PDF, tire cópias e distribua. Nada de folha especial ou
+        impressão colorida.</p>
+      </div>
+      <div class="card">
+        <span class="ic">📊</span>
+        <h3>Relatórios e planilha</h3>
+        <p>Exporte as notas para o Excel, gere a lista de conferência ou o relatório
+        individual de cada aluno.</p>
+      </div>
+      <div class="card">
+        <span class="ic">🎯</span>
+        <h3>Gabarito flexível</h3>
+        <p>Questão anulada, mais de uma resposta certa, pontuação diferente
+        por questão. Você decide.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="destaque" id="como-funciona">
+  <div class="in">
+    <h2>Como funciona</h2>
+    <p class="sec-sub">Do zero à turma corrigida, em quatro passos.</p>
+    <div class="passos">
+      <div class="passo">
+        <div class="num">1</div>
+        <h3>Monte o gabarito</h3>
+        <p>Escolha quantas questões, quais alternativas e os campos do cabeçalho.</p>
+      </div>
+      <div class="passo">
+        <div class="num">2</div>
+        <h3>Imprima e aplique</h3>
+        <p>Baixe o PDF, xeroque para a turma inteira e aplique a prova.</p>
+      </div>
+      <div class="passo">
+        <div class="num">3</div>
+        <h3>Escaneie</h3>
+        <p>Aponte a câmera. A nota aparece na hora, mesmo sem internet.</p>
+      </div>
+      <div class="passo">
+        <div class="num">4</div>
+        <h3>Exporte</h3>
+        <p>Planilha, lista de conferência ou relatório para entregar ao aluno.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARATIVO -->
+<section>
+  <div class="in">
+    <h2>Pensado para a nossa realidade</h2>
+    <p class="sec-sub">O que muda em relação às ferramentas estrangeiras.</p>
+    <table class="comp">
+      <thead>
+        <tr><th>Recurso</th><th>GabaritoApp</th><th>Apps estrangeiros</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Correção sem internet</td><td class="sim">✔ Sim</td><td class="nao">Depende</td></tr>
+        <tr><td>Aplicativo em português</td><td class="sim">✔ Sim</td><td class="nao">Geralmente em inglês</td></tr>
+        <tr><td>Pagamento em real, via Pix</td><td class="sim">✔ Sim</td><td class="nao">Cartão internacional</td></tr>
+        <tr><td>Suporte de quem dá aula aqui</td><td class="sim">✔ Sim</td><td class="nao">Por e-mail, em inglês</td></tr>
+        <tr><td>Folha comum, xerocada</td><td class="sim">✔ Sim</td><td class="sim">✔ Sim</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="in">
+    <h2>Comece a corrigir hoje</h2>
+    <p>Crie sua conta gratuita, monte um gabarito e teste com uma prova.<br>
+    Leva menos de cinco minutos.</p>
+    <a href="/login" class="btn btn-primario">Criar conta grátis</a>
+  </div>
+</section>
+
+<footer>
+  <p>📋 <b>GabaritoApp</b> — correção de provas para professores brasileiros.</p>
+  <p style="margin-top:8px"><a href="/login">Entrar</a> · <a href="/login">Criar conta</a></p>
+</footer>
+
+</body>
+</html>
