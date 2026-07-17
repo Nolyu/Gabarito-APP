@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.onrender.gabarito_app_dwsh.twa",
+        "sha256_cert_fingerprints": ["A4:53:25:51:D8:DF:47:F1:CA:2E:BD:85:F7:E5:54:9A:1C:60:0D:7D:F0:CD:F1:FB:D4:F8:E5:E3:28:DE:FE:5E"]
+      }
+    }]
