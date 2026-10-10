@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" href="/static/icon-192.png">
+<title>Excluir conta — Scanotas</title>
+<style>
+  /* Mesmo visual da tela de login, para a pessoa reconhecer que é o mesmo app. */
+  :root { --azul:#2563eb; --verm:#dc2626; --texto:#1e293b; --borda:#e2e8f0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:linear-gradient(160deg,#eff6ff,#dbeafe); color:var(--texto);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .card { background:white; border-radius:20px; padding:28px 22px; width:100%;
+    max-width:420px; box-shadow:0 8px 30px rgba(0,0,0,0.1); }
+  h1 { font-size:1.3rem; margin-bottom:10px; }
+  p, li { font-size:0.9rem; color:#475569; line-height:1.5; margin-bottom:8px; }
+  ul { padding-left:20px; margin-bottom:12px; }
+  label { font-size:0.85rem; font-weight:600; display:block; margin-bottom:5px; }
+  input { width:100%; padding:13px; border:1.5px solid var(--borda); border-radius:12px;
+    font-size:1rem; margin-bottom:14px; }
+  .confirma { display:flex; gap:10px; align-items:flex-start; font-weight:400;
+    font-size:0.88rem; margin-bottom:16px; }
+  .confirma input { width:auto; margin:3px 0 0; }
+  button { width:100%; padding:14px; border:none; border-radius:12px; font-size:1rem;
+    font-weight:700; background:var(--verm); color:white; cursor:pointer; }
+  button:disabled { opacity:0.5; }
+  .erro { display:none; background:#fef2f2; color:#991b1b; border-radius:10px;
+    padding:10px 12px; font-size:0.85rem; margin-bottom:12px; }
+  .ok { display:none; text-align:center; }
+  .ok p { font-size:0.95rem; }
+  a { color:var(--azul); }
+  .rodape { margin-top:16px; font-size:0.8rem; text-align:center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form">
+    <h1>🗑️ Excluir sua conta do Scanotas</h1>
+    <p>Isso apaga <b>permanentemente</b>:</p>
+    <ul>
+      <li>sua conta (nome, email e senha);</li>
+      <li>seus modelos de folha de respostas;</li>
+      <li>todas as correções, notas e fotos das provas.</li>
+    </ul>
+    <p>Não dá para desfazer. Se quiser guardar as notas, baixe os relatórios no
+    site antes de continuar.</p>
+
+    <div class="erro" id="erro"></div>
+    <label for="email">Email da conta</label>
+    <input type="email" id="email" autocomplete="email">
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" autocomplete="current-password">
+    <label class="confirma">
+      <input type="checkbox" id="certeza" onchange="document.getElementById('btn').disabled=!this.checked">
+      Entendo que minha conta e todos os dados serão apagados para sempre.
+    </label>
+    <button id="btn" disabled onclick="excluir()">Excluir minha conta</button>
+
+    <p class="rodape">Esqueceu a senha? Crie uma nova na
+    <a href="/login">tela de entrar</a> usando seu código de recuperação.
+    {% if contato %}Se perdeu também o código, peça a exclusão por email:
+    <a href="mailto:{{ contato }}?subject=Excluir%20minha%20conta">{{ contato }}</a>.{% endif %}</p>
+    <p class="rodape">Também dá para excluir pelo app: aba <i>Sincronizar</i> →
+    <i>Deletar minha conta</i>. · <a href="/privacidade">Política de privacidade</a></p>
+  </div>
+
+  <div class="ok" id="ok">
+    <h1>✅ Conta excluída</h1>
+    <p>Sua conta e todos os seus dados foram apagados do servidor.</p>
+    <p>Se o app estiver instalado no seu celular, pode desinstalá-lo: as
+    correções guardadas nele não serão mais sincronizadas.</p>
+  </div>
+</div>
+
+<script>
+async function excluir() {
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value;
+  const erro = document.getElementById('erro');
+  const btn = document.getElementById('btn');
+  erro.style.display = 'none';
+  if (!email || !senha) { erro.textContent = 'Preencha email e senha.'; erro.style.display = 'block'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Excluindo...';
+  try {
+    const r = await fetch('/api/excluir_conta_web', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, senha})
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.ok) throw new Error(d.erro || 'Não foi possível excluir. Tente de novo.');
+    document.getElementById('form').style.display = 'none';
+    document.getElementById('ok').style.display = 'block';
+  } catch (e) {
+    // "Failed to fetch" não diz nada ao professor: traduz para o motivo real
+    const msg = (e.message || '').includes('fetch') ? 'Sem conexão com o servidor. Verifique a internet e tente de novo.' : e.message;
+    erro.textContent = msg;
+    erro.style.display = 'block';
+    btn.textContent = 'Excluir minha conta';
+    btn.disabled = !document.getElementById('certeza').checked;
+  }
+}
+</script>
+</body>
+</html>

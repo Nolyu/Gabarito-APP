@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" href="/static/icon-192.png">
+<title>Política de Privacidade — Scanotas</title>
+<style>
+  /* Página de texto simples, pensada para ser lida no celular. Sem nada
+     externo (nem fontes): abre rápido e funciona mesmo com o Render acordando. */
+  :root { --azul:#2563eb; --texto:#1e293b; --borda:#e2e8f0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#f8fafc; color:var(--texto); line-height:1.6; }
+  header { background:var(--azul); color:white; padding:14px 20px; }
+  header a { color:white; text-decoration:none; font-weight:700; }
+  main { max-width:720px; margin:0 auto; padding:20px 18px 48px; }
+  h1 { font-size:1.4rem; margin-bottom:4px; }
+  .data { color:#64748b; font-size:0.85rem; margin-bottom:18px; }
+  h2 { font-size:1.05rem; margin:24px 0 8px; color:var(--azul); }
+  p, li { font-size:0.95rem; margin-bottom:8px; }
+  ul { padding-left:22px; }
+  .destaque { background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px;
+    padding:12px 14px; margin:14px 0; font-size:0.92rem; }
+  a { color:var(--azul); }
+</style>
+</head>
+<body>
+<header><a href="/">📋 Scanotas</a></header>
+<main>
+  <h1>Política de Privacidade</h1>
+  <p class="data">Última atualização: 29 de setembro de 2026</p>
+
+  <p>O Scanotas (também chamado de GabaritoApp) é um aplicativo para professores
+  corrigirem provas de múltipla escolha fotografando a folha de respostas com o
+  celular. Esta página explica quais dados o app guarda, para quê, e como você
+  pode apagá-los, de acordo com a Lei Geral de Proteção de Dados (LGPD — Lei
+  nº 13.709/2018).</p>
+
+  <div class="destaque">
+    <b>Resumo:</b> guardamos só o necessário para corrigir as provas e mostrar os
+    resultados ao professor. Não vendemos dados, não mostramos anúncios e não
+    usamos ferramentas de rastreamento. Você pode apagar sua conta e tudo o que
+    está nela a qualquer momento.
+  </div>
+
+  <h2>1. Quem usa o app</h2>
+  <p>O app é feito para <b>professores</b>. Só o professor cria conta e usa o
+  app. Os alunos não usam o app nem têm conta; eles apenas preenchem a folha de
+  respostas em papel.</p>
+
+  <h2>2. Dados que guardamos</h2>
+  <p><b>Da conta do professor:</b></p>
+  <ul>
+    <li>nome e email;</li>
+    <li>senha e código de recuperação, guardados de forma cifrada (nem nós
+    conseguimos ler a senha).</li>
+  </ul>
+  <p><b>Do trabalho do professor:</b></p>
+  <ul>
+    <li>os modelos de folha de respostas criados (nome, número de questões,
+    campos da folha);</li>
+    <li>as correções criadas e as respostas corretas (gabarito) de cada uma.</li>
+  </ul>
+  <p><b>De cada prova corrigida:</b></p>
+  <ul>
+    <li>as respostas marcadas, o número de acertos e a nota;</li>
+    <li>a matrícula e a versão da prova, quando a folha tem esses campos;</li>
+    <li>imagens recortadas da folha fotografada: a área das respostas e a área
+    onde o aluno escreveu o nome. Elas servem para o professor conferir a
+    correção e identificar de quem é a prova.</li>
+  </ul>
+  <p>Não coletamos localização, contatos, dados de outros apps nem identificadores
+  de publicidade. A câmera é usada apenas enquanto o professor está escaneando
+  provas, e só as imagens das provas lidas são guardadas.</p>
+
+  <h2>3. Dados de alunos</h2>
+  <p>As provas podem conter o nome e a matrícula de alunos, muitos deles menores
+  de idade. Esses dados são inseridos pelo professor, no exercício da sua
+  atividade de ensino, e ficam acessíveis apenas na conta dele. O Scanotas
+  apenas armazena e processa esses dados para gerar a correção; não os usa para
+  nenhuma outra finalidade. Pedidos sobre dados de um aluno podem ser feitos ao
+  professor ou à escola, ou diretamente pelo contato no fim desta página.</p>
+
+  <h2>4. Para que usamos os dados</h2>
+  <ul>
+    <li>manter sua conta e permitir o login;</li>
+    <li>corrigir as provas e mostrar notas, relatórios e estatísticas;</li>
+    <li>sincronizar as correções entre o celular e o site;</li>
+    <li>permitir que você compartilhe um modelo de folha com um colega. O colega
+    recebe uma cópia <b>somente do modelo da folha</b>, nunca das provas
+    corrigidas nem dos dados dos alunos.</li>
+  </ul>
+  <p>A base legal é a execução do serviço que você pediu ao criar a conta
+  (art. 7º, V, da LGPD).</p>
+
+  <h2>5. Onde os dados ficam</h2>
+  <p>Os dados ficam em dois lugares:</p>
+  <ul>
+    <li><b>No seu celular</b>, dentro do próprio app, para que a correção funcione
+    sem internet;</li>
+    <li><b>No servidor</b>, em serviços de nuvem contratados para hospedar o app
+    (Render, que hospeda o site, e Neon, que hospeda o banco de dados). Esses
+    servidores podem estar fora do Brasil. Os dados trafegam sempre por conexão
+    cifrada (HTTPS).</li>
+  </ul>
+  <p>O app baixa uma biblioteca de leitura de imagens (OpenCV) do site oficial
+  dela. Nesse download, esse site recebe apenas as informações técnicas comuns
+  a qualquer acesso na internet, como o endereço IP. Nenhum dado de prova é
+  enviado a ele: a leitura das provas acontece dentro do seu celular.</p>
+  <p>O site usa apenas um cookie, que mantém você conectado. Não usamos cookies
+  de publicidade nem de análise.</p>
+
+  <h2>6. Com quem compartilhamos</h2>
+  <p>Com ninguém, a não ser os provedores de hospedagem citados acima, que só
+  armazenam os dados para nós, ou quando a lei obrigar. Não vendemos nem
+  alugamos dados.</p>
+
+  <h2>7. Por quanto tempo guardamos</h2>
+  <p>Enquanto sua conta existir. Você pode apagar a qualquer momento uma prova,
+  uma correção inteira ou a conta toda. Ao apagar, os dados saem do banco na
+  hora. Cópias de segurança automáticas do provedor do banco podem conter os
+  dados por mais alguns dias, até serem substituídas.</p>
+
+  <h2>8. Como apagar sua conta</h2>
+  <ul>
+    <li><b>No app:</b> aba <i>Sincronizar</i> → <i>Deletar minha conta</i>;</li>
+    <li><b>Pela internet, sem o app:</b> na página
+    <a href="/excluir-conta">scanotas.com/excluir-conta</a>.</li>
+  </ul>
+  <p>Isso apaga a conta, os modelos de folha, as correções, as provas e as
+  imagens. As cópias de modelos de folha que colegas já receberam de você
+  continuam com eles, porque pertencem à conta deles.</p>
+
+  <h2>9. Seus direitos</h2>
+  <p>Pela LGPD, você pode pedir para confirmar se tratamos seus dados, acessá-los,
+  corrigi-los, apagá-los ou levá-los para outro serviço, entre outros direitos
+  (art. 18). Boa parte disso você já faz dentro do próprio app. Para o resto,
+  fale com a gente pelo contato abaixo.</p>
+
+  <h2>10. Segurança</h2>
+  <p>As senhas são guardadas cifradas, a conexão usa HTTPS e cada professor só
+  acessa os próprios dados. Nenhum sistema é totalmente imune a falhas; se
+  acontecer um incidente que afete seus dados, avisaremos você.</p>
+
+  <h2>11. Mudanças nesta política</h2>
+  <p>Se esta política mudar, a data no topo da página será atualizada. Mudanças
+  importantes também serão avisadas no app.</p>
+
+  <h2>12. Contato</h2>
+  {% if contato %}
+  <p>Dúvidas ou pedidos sobre privacidade: <a href="mailto:{{ contato }}">{{ contato }}</a></p>
+  {% else %}
+  <p>Dúvidas ou pedidos sobre privacidade: use o email de suporte que aparece na
+  página do app na Play Store.</p>
+  {% endif %}
+</main>
+</body>
+</html>
