@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" href="/static/icon-192.png">
+<title>GabaritoApp — Gabarito compartilhado</title>
+<!-- Página mostrada quando alguém abre um link de gabarito compartilhado
+     NUM COMPUTADOR. No celular o professor vai direto para o app (ver
+     _fim_compartilhamento no app.py). Aqui só explicamos o que aconteceu e
+     que a correção é feita pelo celular — o painel do site não corrige. -->
+<style>
+  :root { --azul:#2563eb; --texto:#1e293b; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:linear-gradient(160deg,#eff6ff,#dbeafe); color:var(--texto);
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:16px;
+  }
+  .card {
+    background:white; border-radius:20px; padding:32px 26px;
+    width:100%; max-width:440px; box-shadow:0 8px 30px rgba(0,0,0,0.1);
+    text-align:center;
+  }
+  .icone { font-size:2.6rem; margin-bottom:8px; }
+  h1 { font-size:1.3rem; margin-bottom:10px; }
+  p { color:#475569; font-size:0.92rem; line-height:1.5; margin-bottom:12px; }
+  .passos {
+    text-align:left; background:#f1f5f9; border-radius:12px;
+    padding:14px 16px 14px 34px; margin:14px 0 18px; font-size:0.9rem; line-height:1.6;
+  }
+  .endereco { font-weight:800; color:var(--azul); }
+  .btn {
+    display:block; padding:13px; border-radius:12px; font-weight:700;
+    text-decoration:none; background:#e2e8f0; color:var(--texto); font-size:0.95rem;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  {% if status == "ok" %}
+    <div class="icone">✅</div>
+    <h1>Gabarito adicionado à sua conta</h1>
+    <p><b>{{ nome }}</b> já está na sua conta.</p>
+  {% elif status == "ja_tinha" %}
+    <div class="icone">👍</div>
+    <h1>Você já tem este gabarito</h1>
+    <p><b>{{ nome }}</b> já tinha sido adicionado antes. Não criei outra cópia.</p>
+  {% elif status == "proprio" %}
+    <div class="icone">👍</div>
+    <h1>Este gabarito é seu</h1>
+    <p><b>{{ nome }}</b> foi criado por você. Mande este link para os colegas.</p>
+  {% elif status == "limite" %}
+    <div class="icone">⚠️</div>
+    <h1>Sua conta está cheia</h1>
+    <p>Você chegou ao limite de gabaritos. Apague algum que não usa mais no painel
+       e abra o link de novo.</p>
+  {% elif status == "invalido" %}
+    <div class="icone">⚠️</div>
+    <h1>Link inválido</h1>
+    <p>Este gabarito não existe mais (o dono pode ter apagado). Peça um link novo.</p>
+  {% else %}
+    <div class="icone">⚠️</div>
+    <h1>Não consegui adicionar</h1>
+    <p>Algo deu errado ao copiar <b>{{ nome }}</b>. Tente abrir o link de novo.</p>
+  {% endif %}
+
+  {% if status in ("ok", "ja_tinha", "proprio") %}
+  <p style="margin-top:6px"><b>📱 A correção é feita pelo celular.</b></p>
+  <ol class="passos">
+    <li>No celular, abra o app (ou <span class="endereco">{{ request.host }}/app</span>).</li>
+    <li>Entre com a mesma conta.</li>
+    <li>Em <b>Gabaritos</b>, toque em <b>{{ nome or "o gabarito" }}</b> → <b>Fazer nova correção</b>.</li>
+  </ol>
+  {% endif %}
+
+  <a class="btn" href="/dashboard">Ir para o painel do site</a>
+</div>
+</body>
+</html>
